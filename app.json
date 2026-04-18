@@ -10,11 +10,13 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vee.bodookhrang",
-      "associatedDomains": ["applinks:bodookhrang.com"]
+      "bundleIdentifier": "com.bodo.okhrang",
+      "associatedDomains": [
+        "applinks:bodookhrang.com"
+      ]
     },
     "android": {
-      "package": "com.vee.bodookhrang",
+      "package": "com.bodo.okhrang",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
@@ -32,7 +34,10 @@
               "pathPrefix": "/api/auth/callback"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         },
         {
           "action": "VIEW",
@@ -41,7 +46,10 @@
               "scheme": "bodookhrang"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -64,6 +72,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "31115f52-4911-4cf8-ae66-4473404dc24a"
+      }
     }
   }
 }
