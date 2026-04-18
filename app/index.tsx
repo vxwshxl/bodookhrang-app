@@ -1,4 +1,4 @@
-import { StyleSheet, View, Platform, BackHandler } from 'react-native';
+import { StyleSheet, View, Platform, BackHandler, Linking } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -65,6 +65,42 @@ export default function WebApp() {
     return () => subscription.remove();
   }, []);
 
+  // ── Native Deep Link listener (Crucial for Android) ────────────────────────
+  //
+  // On Android, Custom Tabs routing back to "bodookhrang://" often wakes up
+  // the MainActivity directly via OS intents. This means openAuthSessionAsync's
+  // Promise returns { type: 'dismiss' } empty-handed, and the URL is handed
+  // directly to the app. We use React Native Linking to reliably catch it.
+  
+  useEffect(() => {
+    const handleDeepLink = (url: string | null) => {
+      if (!url) return;
+      try {
+        const urlObj = new URL(url);
+        // If it's our deep link and has a PKCE auth code from Supabase
+        if (urlObj.protocol === 'bodookhrang:' && urlObj.searchParams.has('code')) {
+          const callbackUrl = `${WEB_AUTH_CALLBACK}${urlObj.search}`;
+          // Wait briefly to ensure WebView is ready
+          setTimeout(() => {
+            webViewRef.current?.injectJavaScript(
+              `window.location.href = ${JSON.stringify(callbackUrl)}; true;`
+            );
+          }, 300);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    };
+
+    // Listen for URLs while app is running
+    const subscription = Linking.addEventListener('url', (event) => handleDeepLink(event.url));
+    
+    // Check if app was launched via URL
+    Linking.getInitialURL().then(handleDeepLink);
+
+    return () => subscription.remove();
+  }, []);
+
   // ── Google Sign-In bridge ─────────────────────────────────────────────────
   //
   // HOW IT WORKS
@@ -99,18 +135,22 @@ export default function WebApp() {
 
       if (msg.type === 'SUPABASE_GOOGLE_AUTH' && msg.url) {
         WebBrowser.openAuthSessionAsync(msg.url, APP_AUTH_CALLBACK).then((result) => {
-          if (result.type !== 'success' || !result.url) return; // user cancelled
-
-          // result.url = "bodookhrang://auth-callback?code=SUPABASE_CODE"
-          // Strip the app scheme prefix → "?code=SUPABASE_CODE"
-          const suffix = result.url.replace(APP_AUTH_CALLBACK, '');
-
-          // Navigate the WebView to the website's /auth/callback page.
-          // Supabase JS there has the code_verifier → PKCE exchange works.
-          const callbackUrl = `${WEB_AUTH_CALLBACK}${suffix}`;
-          webViewRef.current?.injectJavaScript(
-            `window.location.href = ${JSON.stringify(callbackUrl)}; true;`
-          );
+          // If iOS/Android successfully populated the url inside the promise, handle it here.
+          // Note: On Android, this might just return { type: 'dismiss' } and the URL
+          // will be caught by the Linking listener above instead.
+          if (result.type === 'success' && result.url) {
+            try {
+              const parsedUrl = new URL(result.url);
+              if (parsedUrl.searchParams.has('code')) {
+                const callbackUrl = `${WEB_AUTH_CALLBACK}${parsedUrl.search}`;
+                webViewRef.current?.injectJavaScript(
+                  `window.location.href = ${JSON.stringify(callbackUrl)}; true;`
+                );
+              }
+            } catch {
+              // Ignore
+            }
+          }
         });
       }
     } catch {
