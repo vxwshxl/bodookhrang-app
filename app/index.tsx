@@ -13,7 +13,7 @@ WebBrowser.maybeCompleteAuthSession();
 const HOME_DOMAIN = 'bodookhrang.com';
 // App scheme used as Supabase's final redirect — Supabase (not Google)
 // performs this redirect, so Google's "no custom scheme" policy never applies.
-const APP_AUTH_CALLBACK = 'bodookhrang://auth-callback';
+const APP_AUTH_CALLBACK = 'bodookhrang://';
 // Website page that exchanges the Supabase auth code for a session.
 const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
 
