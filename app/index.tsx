@@ -1,7 +1,7 @@
-import { StyleSheet, View, Platform, BackHandler } from 'react-native';
+import { StyleSheet, View, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRef, useState, useEffect } from 'react';
+import { StatusBar } from 'expo-status-bar';
 
 // Custom User Agents to bypass the Google "disallowed_useragent" WebView error
 const CUSTOM_USER_AGENT = Platform.OS === 'android'
@@ -10,44 +10,22 @@ const CUSTOM_USER_AGENT = Platform.OS === 'android'
 
 export default function WebApp() {
   const insets = useSafeAreaInsets();
-  const webViewRef = useRef<WebView>(null);
-  const [canGoBack, setCanGoBack] = useState(false);
-
-  // Hook into Android's native back gesture (which includes swiping from edges)
-  useEffect(() => {
-    if (Platform.OS === 'android') {
-      const onAndroidBackPress = () => {
-        if (canGoBack && webViewRef.current) {
-          webViewRef.current.goBack();
-          return true; // strict override -> prevents exiting the app!
-        }
-        return false; // let the app close if we are at the very first page
-      };
-      
-      BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
-      return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
-      };
-    }
-  }, [canGoBack]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {/* 
+        Setting style to 'light' makes the status bar text/icons white. 
+        Because the container is #000000, it creates a seamless dark mode look.
+      */}
+      <StatusBar style="light" backgroundColor="#000000" />
+      
       <WebView
-        ref={webViewRef}
         source={{ uri: 'https://bodookhrang.com' }}
         sharedCookiesEnabled={true}
         userAgent={CUSTOM_USER_AGENT}
         style={styles.webview}
+        // Allows for hardware acceleration and proper session management
         originWhitelist={['*']}
-        
-        // This single prop magically handles native left/right swiping for iOS devices
-        allowsBackForwardNavigationGestures={true}
-        
-        // Update our state whenever the browser navigates to know if we CAN go back
-        onNavigationStateChange={(navState) => {
-          setCanGoBack(navState.canGoBack);
-        }}
       />
     </View>
   );
@@ -56,9 +34,11 @@ export default function WebApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    // A pure black background to blend seamlessly with the website's dark mode
+    backgroundColor: '#000000',
   },
   webview: {
     flex: 1,
+    backgroundColor: '#000000',
   },
 });
