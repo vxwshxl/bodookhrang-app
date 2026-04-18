@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+<div align="center">
+  <img src="./assets/images/banner-1920x1080.png" alt="Bodo Okhrang Banner" width="100%" />
+</div>
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+<br />
 
-## Get started
+<div align="center">
+  <img src="./assets/images/icon.png" alt="Bodo Okhrang Logo" width="120" style="border-radius: 20px" />
+  <h1>Bodo Okhrang App</h1>
+  <p><b>Beyond Limit for Creative Language.</b></p>
+  <p><i>Empowering Creativity with AI-native tools for Bodo writing, translation, OCR, and knowledge work.</i></p>
+</div>
 
-1. Install dependencies
+<hr />
 
-   ```bash
-   npm install
-   ```
+## 🌍 About the Platform
 
-2. Start the app
+**Bodo Okhrang Sky Tech Pvt. Ltd.** provides a fully integrated digital spectrum for creative language. Our architecture serves as one central place to run multilingual assistance and build clean Bodo knowledge systems. Translate, search, and archive securely without ever losing context!
 
-   ```bash
-   npx expo start
-   ```
+### 🔥 Platform Capabilities
+- **OkhranGPT 2.0:** Deeply contextual, highly aware A.I. Chat tailor-tuned for Bodo interactions.
+- **OkhranGTR Live Translation:** Blazing fast real-time translations across boundaries.
+- **Cultural Fidelity:** Proudly maintaining an unprecedented **98.2% cultural fidelity**.
+- **Multilingual Matrix:** Support natively streaming across **5 languages**.
 
-In the output, you'll find options to open the app in a
+## 📱 The Mobile Application
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The codebase in this repository wraps the core [bodookhrang.com](https://bodookhrang.com) architecture into natively executable containers for iOS and Android using Expo and `react-native-webview`. 
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+By utilizing native persistent sessions, the app remembers you—meaning you stay logged in and connected across app restarts, identically to how a user profile operates natively on devices. 
 
-## Get a fresh project
-
-When you're ready, run:
+### Running Locally
 
 ```bash
-npm run reset-project
+# 1. Access the repository
+cd bodookhrang-app
+
+# 2. Start the Metro Development Server
+npm run start
 ```
+* **iOS Users:** Press `i` inside the terminal to boot the iOS Simulator.
+* **Android Users:** Press `a` to open the local Android runtime.
+* **Physical Devices:** Download Expo Go and scan the QR generated in the terminal!
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+<div align="center">
+  <p><i>Developed with ❤️ by the Bodo Okhrang Sky Tech Pvt. Ltd. Team.</i></p>
+</div>
