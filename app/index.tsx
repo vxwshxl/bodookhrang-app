@@ -3,31 +3,41 @@ import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useCallback, useEffect, useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
 
-// Custom User Agents to bypass the Google "disallowed_useragent" WebView error
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const HOME_DOMAIN = 'bodookhrang.com';
+// App scheme used as Supabase's final redirect — Supabase (not Google)
+// performs this redirect, so Google's "no custom scheme" policy never applies.
+const APP_AUTH_CALLBACK = 'bodookhrang://auth-callback';
+// Website page that exchanges the Supabase auth code for a session.
+const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
+
+// Spoof a real mobile browser so Google doesn't reject sign-in with
+// "disallowed_useragent" when the auth page briefly renders in WebView.
 const CUSTOM_USER_AGENT = Platform.OS === 'android'
   ? 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
   : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1';
 
-const HOME_DOMAIN = 'bodookhrang.com';
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function WebApp() {
   const insets = useSafeAreaInsets();
   const webViewRef = useRef<WebView>(null);
-  // Track whether we're currently on the home domain
   const isOnHomeDomain = useRef(true);
-  // Track whether the WebView can go back
   const canGoBack = useRef(false);
-  // iOS: controls swipe-back gesture reactively (needs state to trigger re-render)
   const [swipeBackEnabled, setSwipeBackEnabled] = useState(false);
+
+  // ── Navigation state tracking ──────────────────────────────────────────────
 
   const handleNavigationStateChange = useCallback((navState: WebViewNavigation) => {
     canGoBack.current = navState.canGoBack;
     try {
       const url = new URL(navState.url);
-      const onHome = url.hostname === HOME_DOMAIN || url.hostname.endsWith(`.${HOME_DOMAIN}`);
+      const onHome =
+        url.hostname === HOME_DOMAIN || url.hostname.endsWith(`.${HOME_DOMAIN}`);
       isOnHomeDomain.current = onHome;
-      // Enable swipe-back on iOS only when off the home domain and can actually go back
       if (Platform.OS === 'ios') {
         setSwipeBackEnabled(!onHome && navState.canGoBack);
       }
@@ -37,40 +47,90 @@ export default function WebApp() {
     }
   }, []);
 
-  // Android hardware back button handler
+  // ── Android hardware back button ───────────────────────────────────────────
+
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     const onBackPress = () => {
-      // Only intercept if we're NOT on the home domain and the WebView can go back
       if (!isOnHomeDomain.current && canGoBack.current) {
         webViewRef.current?.goBack();
-        return true; // Consumed — don't exit the app
+        return true;
       }
-      return false; // Let the OS handle it (exit app) when on home domain
+      return false;
     };
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => subscription.remove();
   }, []);
 
+  // ── Google Sign-In bridge ─────────────────────────────────────────────────
+  //
+  // HOW IT WORKS
+  // ─────────────
+  // The website detects window.ReactNativeWebView and, instead of doing a
+  // full-page redirect, calls supabase.auth.signInWithOAuth({ skipBrowserRedirect: true })
+  // which returns the auth URL without navigating. It then posts:
+  //   { type: "SUPABASE_GOOGLE_AUTH", url: "https://supabase.bodookhrang.com/auth/v1/authorize?…" }
+  //
+  // We receive that URL here, then:
+  //   1. Open it with openAuthSessionAsync — this uses ASWebAuthenticationSession
+  //      (iOS) or Chrome Custom Tab (Android), both of which share the native
+  //      browser's cookie store, so Google shows saved accounts ✅
+  //   2. Supabase ultimately redirects to bodookhrang://auth-callback?code=…
+  //      The custom scheme is watched by ASWebAuthenticationSession → browser
+  //      auto-closes ✅
+  //   3. We strip the app scheme and hand the code to the website's own
+  //      /auth/callback page. The Supabase JS client there has the PKCE
+  //      code_verifier in localStorage (stored before skipBrowserRedirect
+  //      returned) and completes the code exchange → session established ✅
+  //
+  // PREREQUISITE
+  // ─────────────
+  // Add to your self-hosted Supabase environment (GoTrue service):
+  //   GOTRUE_EXTRA_REDIRECT_URLS=bodookhrang://
+  // Then restart the auth service. Without this, Supabase validates and rejects
+  // bodookhrang:// as a redirect URL at the server level.
+
+  const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
+    try {
+      const msg = JSON.parse(event.nativeEvent.data);
+
+      if (msg.type === 'SUPABASE_GOOGLE_AUTH' && msg.url) {
+        WebBrowser.openAuthSessionAsync(msg.url, 'bodookhrang://').then((result) => {
+          if (result.type !== 'success' || !result.url) return; // user cancelled
+
+          // result.url = "bodookhrang://auth-callback?code=SUPABASE_CODE"
+          // Strip the app scheme prefix → "?code=SUPABASE_CODE"
+          const suffix = result.url.replace(APP_AUTH_CALLBACK, '');
+
+          // Navigate the WebView to the website's /auth/callback page.
+          // Supabase JS there has the code_verifier → PKCE exchange works.
+          const callbackUrl = `${WEB_AUTH_CALLBACK}${suffix}`;
+          webViewRef.current?.injectJavaScript(
+            `window.location.href = ${JSON.stringify(callbackUrl)}; true;`
+          );
+        });
+      }
+    } catch {
+      // Ignore non-JSON or unrelated messages
+    }
+  }, []);
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* 
-        Setting style to 'light' makes the status bar text/icons white. 
-        Because the container is #000000, it creates a seamless dark mode look.
-      */}
       <StatusBar style="light" backgroundColor="#000000" />
-      
+
       <WebView
         ref={webViewRef}
         source={{ uri: 'https://bodookhrang.com' }}
         sharedCookiesEnabled={true}
         userAgent={CUSTOM_USER_AGENT}
         style={styles.webview}
-        // Allows for hardware acceleration and proper session management
         originWhitelist={['*']}
         onNavigationStateChange={handleNavigationStateChange}
-        // Swipe-back on iOS: enabled only when off bodookhrang.com
         allowsBackForwardNavigationGestures={swipeBackEnabled}
+        onMessage={handleMessage}
       />
     </View>
   );
@@ -79,7 +139,6 @@ export default function WebApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // A pure black background to blend seamlessly with the website's dark mode
     backgroundColor: '#000000',
   },
   webview: {
