@@ -1,10 +1,4 @@
 <div align="center">
-  <img src="./assets/images/banner-1920x1080.png" alt="Bodo Okhrang Banner" width="100%" />
-</div>
-
-<br />
-
-<div align="center">
   <img src="./assets/images/icon.png" alt="Bodo Okhrang Logo" width="120" style="border-radius: 20px" />
   <h1>Bodo Okhrang App</h1>
   <p><b>Beyond Limit for Creative Language.</b></p>
@@ -12,6 +6,10 @@
 </div>
 
 <hr />
+
+<div align="center">
+  <img src="./assets/images/banner-1920x1080.png" alt="Bodo Okhrang Banner" width="100%" />
+</div>
 
 ## 🌍 About the Platform
 
@@ -44,5 +42,5 @@ npm run start
 
 ---
 <div align="center">
-  <p><i>Developed with ❤️ by the Bodo Okhrang Sky Tech Pvt. Ltd. Team.</i></p>
+  <p><i>engineered with precision & crafted with passion</i></p>
 </div>
