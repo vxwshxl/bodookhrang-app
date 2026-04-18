@@ -33,6 +33,15 @@
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "bodookhrang"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },

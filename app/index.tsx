@@ -5,6 +5,9 @@ import { StatusBar } from 'expo-status-bar';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 
+WebBrowser.maybeCompleteAuthSession();
+
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const HOME_DOMAIN = 'bodookhrang.com';
@@ -95,7 +98,7 @@ export default function WebApp() {
       const msg = JSON.parse(event.nativeEvent.data);
 
       if (msg.type === 'SUPABASE_GOOGLE_AUTH' && msg.url) {
-        WebBrowser.openAuthSessionAsync(msg.url, 'bodookhrang://').then((result) => {
+        WebBrowser.openAuthSessionAsync(msg.url, APP_AUTH_CALLBACK).then((result) => {
           if (result.type !== 'success' || !result.url) return; // user cancelled
 
           // result.url = "bodookhrang://auth-callback?code=SUPABASE_CODE"
