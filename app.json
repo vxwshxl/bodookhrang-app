@@ -67,6 +67,10 @@
           "resizeMode": "contain",
           "backgroundColor": "#000000"
         }
+      ],
+      [
+        "./plugins/withRenameApk.js",
+        "bodoookhrang"
       ]
     ],
     "experiments": {
