@@ -4,6 +4,7 @@
     "slug": "bodookhrang",
     "version": "1.0.0",
     "orientation": "portrait",
+    "backgroundColor": "#050505",
     "icon": "./assets/images/icon.png",
     "scheme": "bodookhrang",
     "userInterfaceStyle": "dark",

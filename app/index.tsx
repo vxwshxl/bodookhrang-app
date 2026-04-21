@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
+import { LinearGradient } from 'expo-linear-gradient';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,6 +17,8 @@ const HOME_DOMAIN = 'bodookhrang.com';
 const APP_AUTH_CALLBACK = 'bodookhrang://';
 // Website page that exchanges the Supabase auth code for a session.
 const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
+const APP_SHELL_COLOR = '#050505';
+const STATUS_BAR_GRADIENT = ['#171717', '#2d2d2d', '#171717'] as const;
 
 // Spoof a real mobile browser so Google doesn't reject sign-in with
 // "disallowed_useragent" when the auth page briefly renders in WebView.
@@ -161,15 +164,25 @@ export default function WebApp() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="light" backgroundColor="#000000" />
+    <View style={styles.container}>
+      <StatusBar style="light" translucent backgroundColor="transparent" />
+
+      <View style={[styles.statusBarGlass, { height: insets.top }]}>
+        <LinearGradient
+          colors={STATUS_BAR_GRADIENT}
+          locations={[0, 0.56, 1]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={styles.statusBarGradient}
+        />
+      </View>
 
       <WebView
         ref={webViewRef}
         source={{ uri: 'https://bodookhrang.com' }}
         sharedCookiesEnabled={true}
         userAgent={CUSTOM_USER_AGENT}
-        style={styles.webview}
+        style={[styles.webview, { marginTop: insets.top }]}
         originWhitelist={['*']}
         onNavigationStateChange={handleNavigationStateChange}
         allowsBackForwardNavigationGestures={swipeBackEnabled}
@@ -182,10 +195,22 @@ export default function WebApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: APP_SHELL_COLOR,
+  },
+  statusBarGlass: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    backgroundColor: APP_SHELL_COLOR,
+    zIndex: 2,
+  },
+  statusBarGradient: {
+    ...StyleSheet.absoluteFillObject,
   },
   webview: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: APP_SHELL_COLOR,
   },
 });
