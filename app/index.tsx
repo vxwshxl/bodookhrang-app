@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
+import * as SystemUI from 'expo-system-ui';
 import { LinearGradient } from 'expo-linear-gradient';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -18,7 +19,8 @@ const APP_AUTH_CALLBACK = 'bodookhrang://';
 // Website page that exchanges the Supabase auth code for a session.
 const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
 const APP_SHELL_COLOR = '#050505';
-const STATUS_BAR_GRADIENT = ['#171717', '#2d2d2d', '#171717'] as const;
+const APP_STATUS_BAR_GRADIENT = ['#171717', '#2d2d2d', '#171717'] as const;
+const LANDING_STATUS_BAR_GRADIENT = ['#241a0b', '#7a6330', '#241a0b'] as const;
 
 // Spoof a real mobile browser so Google doesn't reject sign-in with
 // "disallowed_useragent" when the auth page briefly renders in WebView.
@@ -34,6 +36,7 @@ export default function WebApp() {
   const isOnHomeDomain = useRef(true);
   const canGoBack = useRef(false);
   const [swipeBackEnabled, setSwipeBackEnabled] = useState(false);
+  const [isAppRoute, setIsAppRoute] = useState(false);
 
   // ── Navigation state tracking ──────────────────────────────────────────────
 
@@ -44,14 +47,21 @@ export default function WebApp() {
       const onHome =
         url.hostname === HOME_DOMAIN || url.hostname.endsWith(`.${HOME_DOMAIN}`);
       isOnHomeDomain.current = onHome;
+      setIsAppRoute(url.pathname.includes('/app/'));
       if (Platform.OS === 'ios') {
         setSwipeBackEnabled(!onHome && navState.canGoBack);
       }
     } catch {
       isOnHomeDomain.current = true;
+      setIsAppRoute(false);
       if (Platform.OS === 'ios') setSwipeBackEnabled(false);
     }
   }, []);
+
+  useEffect(() => {
+    const shellColor = isAppRoute ? APP_SHELL_COLOR : LANDING_STATUS_BAR_GRADIENT[0];
+    void SystemUI.setBackgroundColorAsync(shellColor);
+  }, [isAppRoute]);
 
   // ── Android hardware back button ───────────────────────────────────────────
 
@@ -167,9 +177,14 @@ export default function WebApp() {
     <View style={styles.container}>
       <StatusBar style="light" translucent backgroundColor="transparent" />
 
-      <View style={[styles.statusBarGlass, { height: insets.top }]}>
+      <View
+        style={[
+          styles.statusBarGlass,
+          { height: insets.top, backgroundColor: isAppRoute ? APP_SHELL_COLOR : LANDING_STATUS_BAR_GRADIENT[0] },
+        ]}
+      >
         <LinearGradient
-          colors={STATUS_BAR_GRADIENT}
+          colors={isAppRoute ? APP_STATUS_BAR_GRADIENT : LANDING_STATUS_BAR_GRADIENT}
           locations={[0, 0.56, 1]}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
