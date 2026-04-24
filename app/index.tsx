@@ -19,8 +19,13 @@ const APP_AUTH_CALLBACK = 'bodookhrang://';
 // Website page that exchanges the Supabase auth code for a session.
 const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
 const APP_SHELL_COLOR = '#050505';
+const LANDING_SHELL_COLOR = '#080808';
 const APP_STATUS_BAR_GRADIENT = ['#171717', '#2d2d2d', '#171717'] as const;
-const LANDING_STATUS_BAR_GRADIENT = ['#241a0b', '#7a6330', '#241a0b'] as const;
+const LANDING_STATUS_BAR_GRADIENT = [
+  'rgba(232,191,84,0.08)',
+  'rgba(244,215,140,0.18)',
+  'rgba(214,168,66,0.08)',
+] as const;
 
 // Spoof a real mobile browser so Google doesn't reject sign-in with
 // "disallowed_useragent" when the auth page briefly renders in WebView.
@@ -59,7 +64,7 @@ export default function WebApp() {
   }, []);
 
   useEffect(() => {
-    const shellColor = isAppRoute ? APP_SHELL_COLOR : LANDING_STATUS_BAR_GRADIENT[0];
+    const shellColor = isAppRoute ? APP_SHELL_COLOR : LANDING_SHELL_COLOR;
     void SystemUI.setBackgroundColorAsync(shellColor);
   }, [isAppRoute]);
 
@@ -180,7 +185,7 @@ export default function WebApp() {
       <View
         style={[
           styles.statusBarGlass,
-          { height: insets.top, backgroundColor: isAppRoute ? APP_SHELL_COLOR : LANDING_STATUS_BAR_GRADIENT[0] },
+          { height: insets.top, backgroundColor: isAppRoute ? APP_SHELL_COLOR : LANDING_SHELL_COLOR },
         ]}
       >
         <LinearGradient
