@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { NavigationBar } from 'expo-navigation-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
@@ -13,8 +14,13 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-    </Stack>
+    <>
+      {/* Android: full screen — the button bar stays hidden and a swipe up from
+          the bottom edge reveals it briefly. No-op on iOS. */}
+      <NavigationBar hidden style="dark" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+      </Stack>
+    </>
   );
 }
