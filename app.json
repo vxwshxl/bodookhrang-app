@@ -61,8 +61,8 @@
       [
         "expo-navigation-bar",
         {
-          "hidden": true,
-          "style": "dark"
+          "style": "dark",
+          "enforceContrast": false
         }
       ],
       [

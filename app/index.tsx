@@ -2,6 +2,7 @@ import { StyleSheet, View, Platform, BackHandler, Linking } from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationBar } from 'expo-navigation-bar';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import * as WebBrowser from 'expo-web-browser';
 import * as SystemUI from 'expo-system-ui';
@@ -53,6 +54,10 @@ const CUSTOM_USER_AGENT = Platform.OS === 'android'
 
 export default function WebApp() {
   const insets = useSafeAreaInsets();
+  // Android draws its button bar over the app (edge-to-edge is always on), so the
+  // WebView stops above it. iOS keeps the full height: the site pads for the
+  // home indicator itself (viewport-fit=cover + env(safe-area-inset-bottom)).
+  const bottomInset = Platform.OS === 'android' ? insets.bottom : 0;
   const webViewRef = useRef<WebView>(null);
   const isOnHomeDomain = useRef(true);
   const canGoBack = useRef(false);
@@ -197,8 +202,14 @@ export default function WebApp() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: isDarkTheme ? DARK_SHELL_COLOR : LIGHT_SHELL_COLOR },
+      ]}
+    >
       <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
+      <NavigationBar style={isDarkTheme ? 'light' : 'dark'} />
 
       <View
         style={[
@@ -220,7 +231,7 @@ export default function WebApp() {
         source={{ uri: 'https://okhrang.com' }}
         sharedCookiesEnabled={true}
         userAgent={CUSTOM_USER_AGENT}
-        style={[styles.webview, { marginTop: insets.top }]}
+        style={[styles.webview, { marginTop: insets.top, marginBottom: bottomInset }]}
         originWhitelist={['*']}
         onNavigationStateChange={handleNavigationStateChange}
         allowsBackForwardNavigationGestures={swipeBackEnabled}
