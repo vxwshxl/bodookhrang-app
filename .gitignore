@@ -41,3 +41,6 @@ app-example
 # generated native folders
 /ios
 /android
+
+# local scratch (store assets etc.) — not shipped, not committed
+temp/
