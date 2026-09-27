@@ -182,7 +182,7 @@ export default function WebApp() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" translucent backgroundColor="transparent" />
+      <StatusBar style="light" />
 
       <View
         style={[
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   statusBarGradient: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   webview: {
     flex: 1,

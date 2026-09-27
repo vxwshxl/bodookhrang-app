@@ -8,7 +8,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "bodookhrang",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bodo.okhrang",
@@ -22,7 +21,6 @@
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "intentFilters": [
         {
@@ -72,7 +70,11 @@
       [
         "./plugins/withRenameApk.js",
         "bodoookhrang"
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
