@@ -12,7 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const HOME_DOMAIN = 'bodookhrang.com';
+const HOME_DOMAIN = 'okhrang.com';
 // App scheme used as Supabase's final redirect — Supabase (not Google)
 // performs this redirect, so Google's "no custom scheme" policy never applies.
 const APP_AUTH_CALLBACK = 'bodookhrang://';
@@ -29,9 +29,11 @@ const LANDING_STATUS_BAR_GRADIENT = [
 
 // Spoof a real mobile browser so Google doesn't reject sign-in with
 // "disallowed_useragent" when the auth page briefly renders in WebView.
+// The trailing "OkhrangApp" token lets the website detect the native app even
+// when __BODO_APP__ misses the document (Android injects it on page start).
 const CUSTOM_USER_AGENT = Platform.OS === 'android'
-  ? 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
-  : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1';
+  ? 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36 OkhrangApp'
+  : 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1 OkhrangApp';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -126,7 +128,7 @@ export default function WebApp() {
   // The website detects window.ReactNativeWebView and, instead of doing a
   // full-page redirect, calls supabase.auth.signInWithOAuth({ skipBrowserRedirect: true })
   // which returns the auth URL without navigating. It then posts:
-  //   { type: "SUPABASE_GOOGLE_AUTH", url: "https://supabase.bodookhrang.com/auth/v1/authorize?…" }
+  //   { type: "SUPABASE_GOOGLE_AUTH", url: "https://supabase.okhrang.com/auth/v1/authorize?…" }
   //
   // We receive that URL here, then:
   //   1. Open it with openAuthSessionAsync — this uses ASWebAuthenticationSession
@@ -199,7 +201,7 @@ export default function WebApp() {
 
       <WebView
         ref={webViewRef}
-        source={{ uri: 'https://bodookhrang.com' }}
+        source={{ uri: 'https://okhrang.com' }}
         sharedCookiesEnabled={true}
         userAgent={CUSTOM_USER_AGENT}
         style={[styles.webview, { marginTop: insets.top }]}
@@ -207,6 +209,9 @@ export default function WebApp() {
         onNavigationStateChange={handleNavigationStateChange}
         allowsBackForwardNavigationGestures={swipeBackEnabled}
         onMessage={handleMessage}
+        // Inject a reliable flag BEFORE page scripts run so the website
+        // can detect it's inside the native app (UA is spoofed for Google sign-in).
+        injectedJavaScriptBeforeContentLoaded={`window.__BODO_APP__ = true; true;`}
       />
     </View>
   );

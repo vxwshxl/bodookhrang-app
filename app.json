@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Bodo Okhrang",
+    "name": "Okhrang - GPT",
     "slug": "bodookhrang",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,7 +13,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.bodo.okhrang",
       "associatedDomains": [
-        "applinks:bodookhrang.com"
+        "applinks:okhrang.com"
       ]
     },
     "android": {
@@ -31,7 +31,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "bodookhrang.com",
+              "host": "okhrang.com",
               "pathPrefix": "/api/auth/callback"
             }
           ],

@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="./assets/images/icon.png" alt="Bodo Okhrang Logo" width="120" style="border-radius: 20px" />
-  <h1>Bodo Okhrang App</h1>
+  <img src="./assets/images/icon.png" alt="Okhrang - GPT Logo" width="120" style="border-radius: 20px" />
+  <h1>Okhrang - GPT</h1>
   <p><b>Beyond Limit for Creative Language.</b></p>
   <p><i>Empowering Creativity with AI-native tools for Bodo writing, translation, OCR, and knowledge work.</i></p>
 </div>
@@ -8,7 +8,7 @@
 <hr />
 
 <div align="center">
-  <img src="./assets/images/banner-1920x1080.png" alt="Bodo Okhrang Banner" width="100%" />
+  <img src="./assets/images/banner-1920x1080.png" alt="Okhrang - GPT Banner" width="100%" />
 </div>
 
 ## 🌍 About the Platform
@@ -23,7 +23,7 @@
 
 ## 📱 The Mobile Application
 
-The codebase in this repository wraps the core [bodookhrang.com](https://bodookhrang.com) architecture into natively executable containers for iOS and Android using Expo and `react-native-webview`. 
+The codebase in this repository wraps the core [okhrang.com](https://okhrang.com) architecture into natively executable containers for iOS and Android using Expo and `react-native-webview`. 
 
 By utilizing native persistent sessions, the app remembers you—meaning you stay logged in and connected across app restarts, identically to how a user profile operates natively on devices. 
 
