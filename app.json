@@ -19,7 +19,7 @@
     "android": {
       "package": "com.bodo.okhrang",
       "adaptiveIcon": {
-        "backgroundColor": "#000000",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "edgeToEdgeEnabled": true,
