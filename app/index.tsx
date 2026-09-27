@@ -18,14 +18,28 @@ const HOME_DOMAIN = 'okhrang.com';
 const APP_AUTH_CALLBACK = 'bodookhrang://';
 // Website page that exchanges the Supabase auth code for a session.
 const WEB_AUTH_CALLBACK = `https://${HOME_DOMAIN}/auth/callback`;
-const APP_SHELL_COLOR = '#050505';
-const LANDING_SHELL_COLOR = '#080808';
-const APP_STATUS_BAR_GRADIENT = ['#171717', '#2d2d2d', '#171717'] as const;
-const LANDING_STATUS_BAR_GRADIENT = [
-  'rgba(232,191,84,0.08)',
-  'rgba(244,215,140,0.18)',
-  'rgba(214,168,66,0.08)',
-] as const;
+// Status bar colors mirror okhrang.com (app/globals.css): the page is --ds-bg
+// with the --ds-accent (#ffc700) glow behind the nav — warm white at the edges,
+// gold in the middle. Dark values follow the site's .dark tokens.
+const LIGHT_SHELL_COLOR = '#ffffff';
+const LIGHT_STATUS_BAR_GRADIENT = ['#fff8e8', '#fae7bc', '#fff8e8'] as const;
+const DARK_SHELL_COLOR = '#0a0a0a';
+const DARK_STATUS_BAR_GRADIENT = ['#0a0a0a', '#241d06', '#0a0a0a'] as const;
+
+// The site's theme switcher (next-themes) toggles `dark` on <html>; report it
+// so the native status bar matches the page.
+const THEME_BRIDGE_JS = `(function () {
+  var root = document.documentElement;
+  var last;
+  function send() {
+    var dark = root.classList.contains('dark');
+    if (dark === last || !window.ReactNativeWebView) return;
+    last = dark;
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'THEME', dark: dark }));
+  }
+  new MutationObserver(send).observe(root, { attributes: true, attributeFilter: ['class'] });
+  send();
+})(); true;`;
 
 // Spoof a real mobile browser so Google doesn't reject sign-in with
 // "disallowed_useragent" when the auth page briefly renders in WebView.
@@ -43,7 +57,7 @@ export default function WebApp() {
   const isOnHomeDomain = useRef(true);
   const canGoBack = useRef(false);
   const [swipeBackEnabled, setSwipeBackEnabled] = useState(false);
-  const [isAppRoute, setIsAppRoute] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
   // ── Navigation state tracking ──────────────────────────────────────────────
 
@@ -54,21 +68,18 @@ export default function WebApp() {
       const onHome =
         url.hostname === HOME_DOMAIN || url.hostname.endsWith(`.${HOME_DOMAIN}`);
       isOnHomeDomain.current = onHome;
-      setIsAppRoute(url.pathname.includes('/app/'));
       if (Platform.OS === 'ios') {
         setSwipeBackEnabled(!onHome && navState.canGoBack);
       }
     } catch {
       isOnHomeDomain.current = true;
-      setIsAppRoute(false);
       if (Platform.OS === 'ios') setSwipeBackEnabled(false);
     }
   }, []);
 
   useEffect(() => {
-    const shellColor = isAppRoute ? APP_SHELL_COLOR : LANDING_SHELL_COLOR;
-    void SystemUI.setBackgroundColorAsync(shellColor);
-  }, [isAppRoute]);
+    void SystemUI.setBackgroundColorAsync(isDarkTheme ? DARK_SHELL_COLOR : LIGHT_SHELL_COLOR);
+  }, [isDarkTheme]);
 
   // ── Android hardware back button ───────────────────────────────────────────
 
@@ -153,6 +164,11 @@ export default function WebApp() {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
 
+      if (msg.type === 'THEME') {
+        setIsDarkTheme(msg.dark === true);
+        return;
+      }
+
       if (msg.type === 'SUPABASE_GOOGLE_AUTH' && msg.url) {
         WebBrowser.openAuthSessionAsync(msg.url, APP_AUTH_CALLBACK).then((result) => {
           // If iOS/Android successfully populated the url inside the promise, handle it here.
@@ -182,17 +198,17 @@ export default function WebApp() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style={isDarkTheme ? 'light' : 'dark'} />
 
       <View
         style={[
           styles.statusBarGlass,
-          { height: insets.top, backgroundColor: isAppRoute ? APP_SHELL_COLOR : LANDING_SHELL_COLOR },
+          { height: insets.top, backgroundColor: isDarkTheme ? DARK_SHELL_COLOR : LIGHT_SHELL_COLOR },
         ]}
       >
         <LinearGradient
-          colors={isAppRoute ? APP_STATUS_BAR_GRADIENT : LANDING_STATUS_BAR_GRADIENT}
-          locations={[0, 0.56, 1]}
+          colors={isDarkTheme ? DARK_STATUS_BAR_GRADIENT : LIGHT_STATUS_BAR_GRADIENT}
+          locations={[0, 0.5, 1]}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={styles.statusBarGradient}
@@ -212,6 +228,7 @@ export default function WebApp() {
         // Inject a reliable flag BEFORE page scripts run so the website
         // can detect it's inside the native app (UA is spoofed for Google sign-in).
         injectedJavaScriptBeforeContentLoaded={`window.__BODO_APP__ = true; true;`}
+        injectedJavaScript={THEME_BRIDGE_JS}
       />
     </View>
   );
@@ -220,7 +237,7 @@ export default function WebApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: APP_SHELL_COLOR,
+    backgroundColor: LIGHT_SHELL_COLOR,
   },
   statusBarGlass: {
     position: 'absolute',
@@ -228,7 +245,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     overflow: 'hidden',
-    backgroundColor: APP_SHELL_COLOR,
+    backgroundColor: LIGHT_SHELL_COLOR,
     zIndex: 2,
   },
   statusBarGradient: {
@@ -236,6 +253,6 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
-    backgroundColor: APP_SHELL_COLOR,
+    backgroundColor: LIGHT_SHELL_COLOR,
   },
 });

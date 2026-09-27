@@ -3,7 +3,7 @@ import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
 
-const APP_SHELL_COLOR = '#050505';
+const APP_SHELL_COLOR = '#ffffff';
 
 void SystemUI.setBackgroundColorAsync(APP_SHELL_COLOR);
 
